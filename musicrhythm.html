@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>音樂創作小助手：節奏與旋律實驗室</title>
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #1d4ed8;
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #8b5cf6;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+      padding: 28px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 2px dashed var(--border);
+      padding-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 8px 0;
+      color: #1e3a8a;
+      font-size: 1.8rem;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    /* 控制列 */
+    .controls-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #eff6ff;
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    label {
+      font-weight: 600;
+      color: #334155;
+      font-size: 0.9rem;
+    }
+
+    select, input[type="range"] {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-success { background: var(--accent); color: white; }
+    .btn-success:hover { background: #059669; }
+    .btn-purple { background: var(--purple); color: white; }
+    .btn-purple:hover { background: #7c3aed; }
+    .btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fca5a5; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-outline { background: white; border: 1px solid #cbd5e1; color: #475569; }
+    .btn-outline:hover { background: #f1f5f9; border-color: #94a3b8; }
+
+    /* 小助手提示框 */
+    .assistant-banner {
+      background: #fffbeb;
+      border-left: 5px solid var(--warning);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .assistant-text {
+      font-size: 0.95rem;
+      color: #92400e;
+    }
+
+    /* 步驟區塊 */
+    .section-title {
+      font-size: 1.25rem;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .step-badge {
+      background: #2563eb;
+      color: #fff;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    /* 音符挑選盤 */
+    .palette-box {
+      background: #f1f5f9;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .palette-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .note-btn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+    }
+
+    .note-choice-btn {
+      background: white;
+      border: 1px solid #cbd5e1;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.15s;
+    }
+
+    .note-choice-btn:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .note-sym {
+      font-size: 1.6rem;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 42px;
+    }
+
+    .note-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .note-beats {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    /* 小節樂譜展示區 */
+    .score-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      min-height: 140px;
+    }
+
+    .measure-card {
+      flex: 1 1 calc(50% - 16px);
+      min-width: 290px;
+      border: 2px solid #cbd5e1;
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .measure-card.status-ok {
+      border-color: var(--accent);
+      background: #f0fdf4;
+    }
+
+    .measure-card.status-incomplete {
+      border-color: var(--warning);
+      background: #fffdf5;
+    }
+
+    .measure-card.status-overflow {
+      border-color: var(--danger);
+      background: #fef2f2;
+    }
+
+    .measure-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+      margin-bottom: 10px;
+    }
+
+    .measure-num {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #475569;
+    }
+
+    .measure-badge {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    .badge-ok { background: #dcfce7; color: #15803d; }
+    .badge-warn { background: #fef3c7; color: #b45309; }
+    .badge-err { background: #fee2e2; color: #b91c1c; }
+
+    .slots-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      min-height: 80px;
+      flex-wrap: wrap;
+      padding: 6px 0;
+    }
+
+    .note-item {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      background: white;
+      border: 1px solid #94a3b8;
+      border-radius: 8px;
+      padding: 6px 8px;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      cursor: pointer;
+    }
+    
+    .note-item .note-sym {
+      height: 38px;
+      margin-bottom: -4px;
+    }
+
+    .note-item.playing {
+      background: #fef08a !important;
+      transform: scale(1.08);
+      border-color: #ca8a04 !important;
+    }
+
+    .note-item .remove-btn {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      font-size: 10px;
+      line-height: 1;
+      display: none;
+      cursor: pointer;
+    }
+
+    .note-item:hover .remove-btn {
+      display: block;
+    }
+
+    .pitch-select-box {
+      margin-top: 4px;
+    }
+
+    .pitch-picker {
+      padding: 2px 4px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      border-radius: 4px;
+      border: 1px solid #94a3b8;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    /* 存取與匯出控制列 */
+    .io-panel {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .io-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .io-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #64748b;
+      margin-right: 4px;
+    }
+    
+    /* SVG 音符專用樣式 */
+    .note-sym-svg {
+      width: auto;
+      height: 38px;
+      color: #1e293b;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🎵 節奏與旋律創作小助手</h1>
+    <div class="subtitle">創作樂譜 ➔ 即時試聽 ➔ 儲存專案 ➔ 下載高品質 WAV 音檔</div>
+  </header>
+
+  <!-- 全域參數與樂器、播放工具列 -->
+  <div class="controls-panel">
+    <div class="controls-row">
+      <div class="control-group">
+        <label for="timeSigSelect">拍子記號：</label>
+        <select id="timeSigSelect">
+          <option value="2/4">2/4 拍 (每小節 2 拍)</option>
+          <option value="3/4">3/4 拍 (每小節 3 拍)</option>
+          <option value="4/4" selected>4/4 拍 (每小節 4 拍)</option>
+          <option value="6/8">6/8 拍 (每小節 6 拍)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="tempoSlider">速度 (BPM: <span id="tempoVal">90</span>)：</label>
+        <input type="range" id="tempoSlider" min="50" max="150" value="90">
+      </div>
+    </div>
+
+    <div class="controls-row">
+      <div class="control-group">
+        <label for="rhythmInstSelect">🥁 節奏樂器：</label>
+        <select id="rhythmInstSelect">
+          <option value="woodblock" selected>木魚 (Woodblock)</option>
+          <option value="drum">小鼓與大鼓 (Drum Kit)</option>
+          <option value="cowbell">牛鈴 (Cowbell)</option>
+          <option value="triangle">三角鐵 (Triangle)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="melodyInstSelect">🎼 旋律樂器：</label>
+        <select id="melodyInstSelect">
+          <option value="piano" selected>鋼琴 (Piano)</option>
+          <option value="glockenspiel">鐵琴 / 鐘琴 (Glockenspiel)</option>
+          <option value="flute">長笛 (Flute)</option>
+          <option value="guitar">木吉他撥弦 (Guitar Pluck)</option>
+          <option value="synth">8-Bit 電子音 (Retro Synth)</option>
+        </select>
+      </div>
+
+      <div class="control-group" style="margin-left: auto;">
+        <button class="btn btn-primary" id="playRhythmBtn">🥁 播放節奏</button>
+        <button class="btn btn-success" id="playMelodyBtn">🎹 播放旋律</button>
+        <button class="btn btn-danger" id="stopBtn">⏹ 停止</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 小助手提示區 -->
+  <div class="assistant-banner">
+    <div class="assistant-text" id="assistantMessage">
+      💡 <strong>小助手提示：</strong>點擊下方音符填入小節，時值吻合時小節將轉為綠色！
+    </div>
+    <button class="btn" style="background:#fde68a; font-size:0.85rem;" id="addBarBtn">➕ 新增小節</button>
+  </div>
+
+  <!-- 步驟一：節奏挑選盤 -->
+  <div class="palette-box">
+    <div class="palette-label">第一步：點選音符加入當前選定小節</div>
+    <div class="note-btn-grid">
+      <button class="note-choice-btn" data-dur="1" data-sym="♩" data-name="四分音符">
+        <span class="note-sym">♩</span>
+        <span class="note-name">四分音符</span>
+        <span class="note-beats">1 拍</span>
+      </button>
+
+      <button class="note-choice-btn" data-dur="0.5" data-sym="♪" data-name="八分音符">
+        <span class="note-sym">♪</span>
+        <span class="note-name">八分音符</span>
+        <span class="note-beats">0.5 拍</span>
+      </button>
+
+      <button class="note-choice-btn" data-dur="0.25" data-sym="♬" data-name="十六分音符">
+        <span class="note-sym">♬</span>
+        <span class="note-name">十六分音符</span>
+        <span class="note-beats">0.25 拍</span>
+      </button>
+
+      <button class="note-choice-btn" data-dur="1.5" data-sym="♩." data-name="附點四分音符">
+        <span class="note-sym">♩.</span>
+        <span class="note-name">附點四分音符</span>
+        <span class="note-beats">1.5 拍</span>
+      </button>
+
+      <button class="note-choice-btn" data-dur="0.75" data-sym="♪." data-name="附點八分音符">
+        <span class="note-sym">♪.</span>
+        <span class="note-name">附點八分音符</span>
+        <span class="note-beats">0.75 拍</span>
+      </button>
+
+      <button class="note-choice-btn" data-dur="2" data-sym='<svg class="note-sym-svg" viewBox="0 0 24 38" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 28C15.866 28 19 29.7909 19 32C19 34.2091 15.866 36 12 36C8.13401 36 5 34.2091 5 32C5 29.7909 8.13401 28 12 28Z" stroke="currentColor" stroke-width="2.5"/><line x1="19" y1="32" x2="19" y2="2" stroke="currentColor" stroke-width="2.5"/></svg>' data-name="二分音符">
+        <span class="note-sym">
+          <svg class="note-sym-svg" viewBox="0 0 24 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 28C15.866 28 19 29.7909 19 32C19 34.2091 15.866 36 12 36C8.13401 36 5 34.2091 5 32C5 29.7909 8.13401 28 12 28Z" stroke="currentColor" stroke-width="2.5"/>
+            <line x1="19" y1="32" x2="19" y2="2" stroke="currentColor" stroke-width="2.5"/>
+          </svg>
+        </span>
+        <span class="note-name">二分音符</span>
+        <span class="note-beats">2 拍</span>
+      </button>
+
+      <button class="note-choice-btn" data-dur="1" data-sym='<svg class="note-sym-svg" viewBox="0 0 24 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 5.5C12.5 5.5 11.5 12.5 16.5 12.5C21.5 12.5 12.5 20.5 16.5 25.5C20.5 30.5 11.5 30.5 7.5 35.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' data-name="四分休止符" data-rest="true">
+        <span class="note-sym">
+            <svg class="note-sym-svg" viewBox="0 0 24 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7.5 5.5C12.5 5.5 11.5 12.5 16.5 12.5C21.5 12.5 12.5 20.5 16.5 25.5C20.5 30.5 11.5 30.5 7.5 35.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </span>
+        <span class="note-name">四分休止符</span>
+        <span class="note-beats">1 拍 (靜音)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 樂譜工作區 -->
+  <div class="section-title">
+    <span class="step-badge">2</span> 創作樂譜展示與音名指派
+    <span style="font-size:0.85rem; color:#64748b; font-weight:normal;">(點選小節可切換輸入位置；更換音名即時試聽)</span>
+  </div>
+
+  <div class="score-container" id="scoreContainer"></div>
+
+  <!-- 存取與檔案下載專屬面板 -->
+  <div class="io-panel">
+    <div class="io-group">
+      <span class="io-title">📁 專案存取：</span>
+      <button class="btn btn-outline" id="saveFileBtn">💾 匯出樂譜檔 (.json)</button>
+      <button class="btn btn-outline" id="loadFileTriggerBtn">📂 開啟樂譜檔</button>
+      <input type="file" id="loadFileInput" accept=".json" style="display:none;">
+      <button class="btn btn-outline" id="quickSaveBtn" title="暫存至此瀏覽器">⚡ 瀏覽器暫存</button>
+      <button class="btn btn-outline" id="quickLoadBtn" title="讀取暫存">📥 讀取暫存</button>
+    </div>
+
+    <div class="io-group">
+      <span class="io-title">🎧 音檔下載：</span>
+      <button class="btn btn-purple" id="downloadRhythmWavBtn">⬇ 下載節奏 (WAV)</button>
+      <button class="btn btn-purple" id="downloadMelodyWavBtn">⬇ 下載旋律 (WAV)</button>
+    </div>
+  </div>
+
+  <div style="margin-top: 16px; display:flex; justify-content:space-between; align-items:center;">
+    <button class="btn btn-danger" id="clearAllBtn">🗑 清空重來</button>
+    <span style="font-size:0.85rem; color:#64748b;">提示：下載音檔採純前端極速運算，無需等待後端轉檔。</span>
+  </div>
+</div>
+
+<script>
+  const PITCH_FREQ = {
+    'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23,
+    'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25,
+    'REST': 0
+  };
+
+  const PITCH_NAMES_LIST = [
+    { code: 'C4', label: 'C4 (Do)' },
+    { code: 'D4', label: 'D4 (Re)' },
+    { code: 'E4', label: 'E4 (Mi)' },
+    { code: 'F4', label: 'F4 (Fa)' },
+    { code: 'G4', label: 'G4 (Sol)' },
+    { code: 'A4', label: 'A4 (La)' },
+    { code: 'B4', label: 'B4 (Ti)' },
+    { code: 'C5', label: 'C5 (高音 Do)' }
+  ];
+
+  let state = {
+    timeSignature: '4/4',
+    beatsPerMeasure: 4,
+    tempo: 90,
+    measures: [
+      { id: 1, notes: [] },
+      { id: 2, notes: [] }
+    ],
+    activeMeasureIndex: 0
+  };
+
+  let audioCtx = null;
+  let isPlaying = false;
+  let playTimeout = null;
+
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  /* =======================================================
+     樂器音色核心渲染器 (同時支援即時播放與離線音檔合成)
+     ======================================================= */
+  function renderPercussion(ctx, dest, type, time, dur) {
+    if (type === 'woodblock') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(850, time);
+      osc.frequency.exponentialRampToValueAtTime(140, time + 0.07);
+
+      gain.gain.setValueAtTime(1.0, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.07);
+
+      osc.connect(gain);
+      gain.connect(dest);
+      osc.start(time);
+      osc.stop(time + 0.07);
+
+    } else if (type === 'drum') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(150, time);
+      osc.frequency.exponentialRampToValueAtTime(40, time + 0.12);
+
+      gain.gain.setValueAtTime(1.2, time);
+      gain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
+
+      const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < noiseBuffer.length; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const whiteNoise = ctx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.3, time);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+
+      osc.connect(gain);
+      gain.connect(dest);
+      whiteNoise.connect(noiseGain);
+      noiseGain.connect(dest);
+
+      osc.start(time);
+      whiteNoise.start(time);
+      osc.stop(time + 0.12);
+      whiteNoise.stop(time + 0.05);
+
+    } else if (type === 'cowbell') {
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      filter.type = 'bandpass';
+      filter.frequency.value = 800;
+
+      osc1.type = 'square';
+      osc2.type = 'square';
+      osc1.frequency.value = 560;
+      osc2.frequency.value = 845;
+
+      gain.gain.setValueAtTime(0.8, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
+
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(gain);
+      gain.connect(dest);
+
+      osc1.start(time);
+      osc2.start(time);
+      osc1.stop(time + 0.14);
+      osc2.stop(time + 0.14);
+
+    } else if (type === 'triangle') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(2400, time);
+
+      gain.gain.setValueAtTime(0.6, time);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.35);
+
+      osc.connect(gain);
+      gain.connect(dest);
+      osc.start(time);
+      osc.stop(time + 0.35);
+    }
+  }
+
+  function renderMelody(ctx, dest, type, freq, time, duration) {
+    if (freq <= 0) return;
+    const safeDuration = Math.max(0.12, duration * 0.92);
+
+    if (type === 'piano') {
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(freq, time);
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(freq * 2, time);
+
+      gain.gain.setValueAtTime(0.8, time);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + safeDuration);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(dest);
+
+      osc1.start(time);
+      osc2.start(time);
+      osc1.stop(time + safeDuration);
+      osc2.stop(time + safeDuration);
+
+    } else if (type === 'glockenspiel') {
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(freq, time);
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(freq * 3.01, time);
+
+      gain.gain.setValueAtTime(0.6, time);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + Math.max(safeDuration, 0.45));
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(dest);
+
+      osc1.start(time);
+      osc2.start(time);
+      osc1.stop(time + Math.max(safeDuration, 0.45));
+      osc2.stop(time + Math.max(safeDuration, 0.45));
+
+    } else if (type === 'flute') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, time);
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(freq * 2.5, time);
+
+      gain.gain.setValueAtTime(0.01, time);
+      gain.gain.linearRampToValueAtTime(0.6, time + 0.05);
+      gain.gain.setValueAtTime(0.5, time + safeDuration * 0.7);
+      gain.gain.linearRampToValueAtTime(0.0001, time + safeDuration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(dest);
+
+      osc.start(time);
+      osc.stop(time + safeDuration);
+
+    } else if (type === 'guitar') {
+      const osc = ctx.createOscillator();
+      const filter = ctx.createBiquadFilter();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, time);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1400, time);
+      filter.frequency.exponentialRampToValueAtTime(300, time + safeDuration);
+
+      gain.gain.setValueAtTime(0.9, time);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + safeDuration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(dest);
+
+      osc.start(time);
+      osc.stop(time + safeDuration);
+
+    } else if (type === 'synth') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(freq, time);
+
+      gain.gain.setValueAtTime(0.3, time);
+      gain.gain.setValueAtTime(0.3, time + safeDuration * 0.85);
+      gain.gain.exponentialRampToValueAtTime(0.0001, time + safeDuration);
+
+      osc.connect(gain);
+      gain.connect(dest);
+
+      osc.start(time);
+      osc.stop(time + safeDuration);
+    }
+  }
+
+  // 封裝標準 PCM 16-bit WAV 二進制檔
+  function audioBufferToWavBlob(buffer) {
+    const numOfChan = buffer.numberOfChannels;
+    const length = buffer.length * numOfChan * 2 + 44;
+    const out = new DataView(new ArrayBuffer(length));
+    let pos = 0;
+
+    function writeString(str) {
+      for (let i = 0; i < str.length; i++) out.setUint8(pos++, str.charCodeAt(i));
+    }
+    function writeUint16(data) { out.setUint16(pos, data, true); pos += 2; }
+    function writeUint32(data) { out.setUint32(pos, data, true); pos += 4; }
+
+    writeString('RIFF');
+    writeUint32(length - 8);
+    writeString('WAVE');
+
+    writeString('fmt ');
+    writeUint32(16);
+    writeUint16(1);
+    writeUint16(numOfChan);
+    writeUint32(buffer.sampleRate);
+    writeUint32(buffer.sampleRate * numOfChan * 2);
+    writeUint16(numOfChan * 2);
+    writeUint16(16);
+
+    writeString('data');
+    writeUint32(length - pos - 4);
+
+    const channels = [];
+    for (let i = 0; i < numOfChan; i++) {
+      channels.push(buffer.getChannelData(i));
+    }
+
+    for (let i = 0; i < buffer.length; i++) {
+      for (let ch = 0; ch < numOfChan; ch++) {
+        let sample = Math.max(-1, Math.min(1, channels[ch][i]));
+        let intSample = sample < 0 ? sample * 32768 : sample * 32767;
+        out.setInt16(pos, intSample, true);
+        pos += 2;
+      }
+    }
+
+    return new Blob([out], { type: 'audio/wav' });
+  }
+
+  // 拍號設定
+  function updateMeterSettings() {
+    const val = document.getElementById('timeSigSelect').value;
+    state.timeSignature = val;
+    if (val === '2/4') state.beatsPerMeasure = 2;
+    else if (val === '3/4') state.beatsPerMeasure = 3;
+    else if (val === '4/4') state.beatsPerMeasure = 4;
+    else if (val === '6/8') state.beatsPerMeasure = 6;
+    render();
+  }
+
+  function getMeasureBeats(measure) {
+    return measure.notes.reduce((sum, n) => {
+      if (state.timeSignature === '6/8') return sum + (n.duration * 2);
+      return sum + n.duration;
+    }, 0);
+  }
+
+  // 畫面渲染
+  function render() {
+    const container = document.getElementById('scoreContainer');
+    container.innerHTML = '';
+    let assistantFeedback = [];
+
+    state.measures.forEach((m, mIdx) => {
+      const currentBeats = getMeasureBeats(m);
+      const target = state.beatsPerMeasure;
+      const diff = target - currentBeats;
+
+      let statusClass = 'status-incomplete';
+      let badgeHtml = '';
+
+      if (diff === 0) {
+        statusClass = 'status-ok';
+        badgeHtml = `<span class="measure-badge badge-ok">✅ 時值吻合 (${currentBeats}/${target} 拍)</span>`;
+      } else if (diff > 0) {
+        statusClass = 'status-incomplete';
+        badgeHtml = `<span class="measure-badge badge-warn">⏳ 還差 ${diff.toFixed(2).replace(/\.00$/, '')} 拍 (${currentBeats}/${target})</span>`;
+        assistantFeedback.push(`第 ${mIdx + 1} 小節還差 ${diff.toFixed(2).replace(/\.00$/, '')} 拍`);
+      } else {
+        statusClass = 'status-overflow';
+        badgeHtml = `<span class="measure-badge badge-err">⚠️ 超出 ${Math.abs(diff).toFixed(2).replace(/\.00$/, '')} 拍！</span>`;
+        assistantFeedback.push(`第 ${mIdx + 1} 小節超出 ${Math.abs(diff).toFixed(2).replace(/\.00$/, '')} 拍`);
+      }
+
+      const card = document.createElement('div');
+      card.className = `measure-card ${statusClass}`;
+      card.onclick = (e) => {
+        if (!e.target.closest('.note-item') && !e.target.closest('select')) {
+          state.activeMeasureIndex = mIdx;
+          render();
+        }
+      };
+
+      card.innerHTML = `
+        <div class="measure-header">
+          <span class="measure-num">第 ${mIdx + 1} 小節 ${mIdx === state.activeMeasureIndex ? '👉 (編輯中)' : ''}</span>
+          ${badgeHtml}
+        </div>
+        <div class="slots-container" id="measure-slots-${mIdx}"></div>
+      `;
+
+      const slots = card.querySelector(`#measure-slots-${mIdx}`);
+
+      m.notes.forEach((note, nIdx) => {
+        const item = document.createElement('div');
+        item.className = 'note-item';
+        item.id = `note-${mIdx}-${nIdx}`;
+
+        let pitchOptions = PITCH_NAMES_LIST.map(p => 
+          `<option value="${p.code}" ${note.pitch === p.code ? 'selected' : ''}>${p.label}</option>`
+        ).join('');
+
+        item.innerHTML = `
+          <button class="remove-btn" title="刪除音符" onclick="deleteNote(${mIdx}, ${nIdx}, event)">×</button>
+          <span class="note-sym">${note.symbol}</span>
+          <div style="font-size:0.75rem; color:#64748b;">${note.duration} 拍</div>
+          ${note.isRest ? '<span style="font-size:0.75rem; color:#94a3b8; font-weight:bold;">休止</span>' : `
+            <div class="pitch-select-box">
+              <select class="pitch-picker" onchange="updatePitch(${mIdx}, ${nIdx}, this.value)">
+                ${pitchOptions}
+              </select>
+            </div>
+          `}
+        `;
+        slots.appendChild(item);
+      });
+
+      container.appendChild(card);
+    });
+
+    const msgEl = document.getElementById('assistantMessage');
+    if (assistantFeedback.length === 0) {
+      msgEl.innerHTML = `🎉 <strong>太棒了！</strong>小節時值完全符合 ${state.timeSignature} 拍！可以點擊播放試聽，或直接匯出 WAV 音檔。`;
+    } else {
+      msgEl.innerHTML = `💡 <strong>小助手提示：</strong>` + assistantFeedback.join('；') + '。';
+    }
+  }
+
+  function addNote(symbol, dur, name, isRest = false) {
+    let curMeasure = state.measures[state.activeMeasureIndex];
+    if (!curMeasure) return;
+
+    curMeasure.notes.push({
+      symbol: symbol,
+      duration: dur,
+      name: name,
+      isRest: isRest,
+      pitch: isRest ? 'REST' : 'C4'
+    });
+    render();
+  }
+
+  window.deleteNote = function(mIdx, nIdx, evt) {
+    evt.stopPropagation();
+    state.measures[mIdx].notes.splice(nIdx, 1);
+    render();
+  };
+
+  window.updatePitch = function(mIdx, nIdx, val) {
+    state.measures[mIdx].notes[nIdx].pitch = val;
+    initAudio();
+    const inst = document.getElementById('melodyInstSelect').value;
+    renderMelody(audioCtx, audioCtx.destination, inst, PITCH_FREQ[val], audioCtx.currentTime, 0.35);
+  };
+
+  function getSequence() {
+    let sequence = [];
+    state.measures.forEach((m, mIdx) => {
+      m.notes.forEach((n, nIdx) => {
+        sequence.push({
+          measureIndex: mIdx,
+          noteIndex: nIdx,
+          duration: n.duration,
+          pitch: n.pitch,
+          isRest: n.isRest
+        });
+      });
+    });
+    return sequence;
+  }
+
+  // 即時播放控制器
+  function startPlayback(mode) {
+    initAudio();
+    stopPlayback();
+    isPlaying = true;
+
+    const sequence = getSequence();
+    if (sequence.length === 0) {
+      alert('請先在樂譜中加入音符！');
+      return;
+    }
+
+    const bpm = parseInt(document.getElementById('tempoSlider').value, 10);
+    const beatDuration = 60 / bpm;
+    const rhythmInst = document.getElementById('rhythmInstSelect').value;
+    const melodyInst = document.getElementById('melodyInstSelect').value;
+
+    let currentStartTime = audioCtx.currentTime + 0.05;
+
+    sequence.forEach((item) => {
+      let actualDuration = item.duration * beatDuration;
+      if (state.timeSignature === '6/8') {
+        actualDuration = (item.duration * 2) * (beatDuration / 2);
+      }
+
+      const delayMs = (currentStartTime - audioCtx.currentTime) * 1000;
+      setTimeout(() => {
+        if (!isPlaying) return;
+        document.querySelectorAll('.note-item').forEach(el => el.classList.remove('playing'));
+        const activeEl = document.getElementById(`note-${item.measureIndex}-${item.noteIndex}`);
+        if (activeEl) activeEl.classList.add('playing');
+      }, delayMs);
+
+      if (!item.isRest) {
+        if (mode === 'rhythm') {
+          renderPercussion(audioCtx, audioCtx.destination, rhythmInst, currentStartTime, actualDuration);
+        } else {
+          renderMelody(audioCtx, audioCtx.destination, melodyInst, PITCH_FREQ[item.pitch], currentStartTime, actualDuration);
+        }
+      }
+
+      currentStartTime += actualDuration;
+    });
+
+    const totalMs = (currentStartTime - audioCtx.currentTime) * 1000;
+    playTimeout = setTimeout(() => {
+      stopPlayback();
+    }, totalMs);
+  }
+
+  function stopPlayback() {
+    isPlaying = false;
+    if (playTimeout) clearTimeout(playTimeout);
+    document.querySelectorAll('.note-item').forEach(el => el.classList.remove('playing'));
+  }
+
+  /* =======================================================
+     離線音訊渲染與 WAV 檔案下載模組
+     ======================================================= */
+  function exportAudio(mode) {
+    const sequence = getSequence();
+    if (sequence.length === 0) {
+      alert('樂譜中沒有音符，無法匯出音檔！');
+      return;
+    }
+
+    const bpm = parseInt(document.getElementById('tempoSlider').value, 10);
+    const beatDuration = 60 / bpm;
+    const rhythmInst = document.getElementById('rhythmInstSelect').value;
+    const melodyInst = document.getElementById('melodyInstSelect').value;
+
+    // 計算總長度
+    let totalSeconds = 0;
+    sequence.forEach(item => {
+      let dur = item.duration * beatDuration;
+      if (state.timeSignature === '6/8') dur = (item.duration * 2) * (beatDuration / 2);
+      totalSeconds += dur;
+    });
+
+    const tail = 1.0; // 預留殘響與衰減
+    const sampleRate = 44100;
+    const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(
+      1,
+      Math.ceil((totalSeconds + tail) * sampleRate),
+      sampleRate
+    );
+
+    let t = 0.05;
+    sequence.forEach(item => {
+      let actualDuration = item.duration * beatDuration;
+      if (state.timeSignature === '6/8') actualDuration = (item.duration * 2) * (beatDuration / 2);
+
+      if (!item.isRest) {
+        if (mode === 'rhythm') {
+          renderPercussion(offlineCtx, offlineCtx.destination, rhythmInst, t, actualDuration);
+        } else {
+          renderMelody(offlineCtx, offlineCtx.destination, melodyInst, PITCH_FREQ[item.pitch], t, actualDuration);
+        }
+      }
+      t += actualDuration;
+    });
+
+    offlineCtx.startRendering().then(renderedBuffer => {
+      const wavBlob = audioBufferToWavBlob(renderedBuffer);
+      const url = URL.createObjectURL(wavBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${mode === 'rhythm' ? '節奏句_' + rhythmInst : '旋律句_' + melodyInst}_BPM${bpm}.wav`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }).catch(err => {
+      alert('音訊匯出失敗：' + err);
+    });
+  }
+
+  /* =======================================================
+     專案儲存與載入 (JSON / LocalStorage)
+     ======================================================= */
+  function exportProjectJSON() {
+    state.tempo = parseInt(document.getElementById('tempoSlider').value, 10);
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `音樂創作專案_${state.timeSignature.replace('/', '-')}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  }
+
+  function loadProjectFromData(parsed) {
+    if (!parsed || !parsed.measures) {
+      alert('無效的專案檔案！');
+      return;
+    }
+    state = parsed;
+    document.getElementById('timeSigSelect').value = state.timeSignature;
+    document.getElementById('tempoSlider').value = state.tempo || 90;
+    document.getElementById('tempoVal').textContent = state.tempo || 90;
+    render();
+    alert('✅ 樂譜專案載入成功！');
+  }
+
+  // 事件綁定
+  document.querySelectorAll('.note-choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dur = parseFloat(btn.dataset.dur);
+      const sym = btn.dataset.sym;
+      const name = btn.dataset.name;
+      const isRest = btn.dataset.rest === 'true';
+      addNote(sym, dur, name, isRest);
+    });
+  });
+
+  document.getElementById('timeSigSelect').addEventListener('change', updateMeterSettings);
+  document.getElementById('tempoSlider').addEventListener('input', (e) => {
+    document.getElementById('tempoVal').textContent = e.target.value;
+  });
+
+  document.getElementById('playRhythmBtn').addEventListener('click', () => startPlayback('rhythm'));
+  document.getElementById('playMelodyBtn').addEventListener('click', () => startPlayback('melody'));
+  document.getElementById('stopBtn').addEventListener('click', stopPlayback);
+
+  document.getElementById('addBarBtn').addEventListener('click', () => {
+    const nextId = state.measures.length + 1;
+    state.measures.push({ id: nextId, notes: [] });
+    state.activeMeasureIndex = state.measures.length - 1;
+    render();
+  });
+
+  document.getElementById('clearAllBtn').addEventListener('click', () => {
+    if (confirm('確定要清空所有小節嗎？')) {
+      stopPlayback();
+      state.measures = [{ id: 1, notes: [] }, { id: 2, notes: [] }];
+      state.activeMeasureIndex = 0;
+      render();
+    }
+  });
+
+  // 音檔下載按鈕
+  document.getElementById('downloadRhythmWavBtn').addEventListener('click', () => exportAudio('rhythm'));
+  document.getElementById('downloadMelodyWavBtn').addEventListener('click', () => exportAudio('melody'));
+
+  // 專案匯出/匯入按鈕
+  document.getElementById('saveFileBtn').addEventListener('click', exportProjectJSON);
+
+  document.getElementById('loadFileTriggerBtn').addEventListener('click', () => {
+    document.getElementById('loadFileInput').click();
+  });
+
+  document.getElementById('loadFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const json = JSON.parse(evt.target.result);
+        loadProjectFromData(json);
+      } catch (err) {
+        alert('檔案讀取失敗，請確認是否為合法的 JSON 檔案。');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  // 瀏覽器暫存功能
+  document.getElementById('quickSaveBtn').addEventListener('click', () => {
+    state.tempo = parseInt(document.getElementById('tempoSlider').value, 10);
+    localStorage.setItem('yc_music_saved_project', JSON.stringify(state));
+    alert('💾 已將樂譜暫存至此瀏覽器！');
+  });
+
+  document.getElementById('quickLoadBtn').addEventListener('click', () => {
+    const saved = localStorage.getItem('yc_music_saved_project');
+    if (!saved) {
+      alert('此瀏覽器中目前沒有暫存的樂譜！');
+      return;
+    }
+    loadProjectFromData(JSON.parse(saved));
+  });
+
+  updateMeterSettings();
+</script>
+
+</body>
+</html>
